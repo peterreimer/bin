@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Commands
+CRYPT="/sbin/cryptsetup"
+MOUNT="/bin/mount"
+UMOUNT="/bin/umount"
+
+DEVICE="/dev/md0"
+CRYPTO_DEVICE="md0_crypt"
+MOUNTPOINT="/storage"
+TYPE="ext4"
+
+case "$1" in
+
+mount)
+    $CRYPT luksOpen $DEVICE  $CRYPTO_DEVICE
+    $MOUNT -v -t $TYPE /dev/mapper/$CRYPTO_DEVICE $MOUNTPOINT
+    cat /proc/mdstat
+    ;;
+
+umount)
+    if mountpoint -q $MOUNTPOINT ; then
+    echo "unmounting..."
+    $UMOUNT $MOUNTPOINT
+    $CRYPT luksClose $CRYPTO_DEVICE
+
+    else
+    echo "not mounted..."
+    fi
+    ;;
+
+*)
+    echo "Usage: .."
+    ;;
+esac
